@@ -42,3 +42,26 @@ Developed high-performance scripts using the `confluent-kafka` library:
 1. **Start the Cluster:**
    ```bash
    docker-compose up -d
+## 📊 Performance Benchmarks & Tuning (The 4 Pillars)
+
+I conducted stress tests with 100,000 records (1KB each) to analyze the trade-offs between **Availability, Durability, Throughput, and Latency.**
+
+### 1. Producer Performance (The Trade-off)
+| Configuration | acks | batch.size | Throughput | Avg Latency | Pillar Focus |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Optimized Throughput** | 1 | 64 KB | **27.49 MB/sec** | 731.23 ms | **Throughput** |
+| **High Durability** | all | 16 KB | **16.52 MB/sec** | 1378.32 ms | **Durability** |
+
+**Key Findings:**
+* **Throughput vs. Durability:** Switching to `acks=all` (ensuring data is written to all replicas) caused a **40% drop in throughput** and **doubled the latency**. 
+* **Batching:** Setting `linger.ms=50` allowed the producer to pack more data per request, significantly increasing the records per second compared to immediate sending.
+
+### 2. Consumer Performance
+| Total Records | MB/sec | Messages/sec | Rebalance Time |
+| :--- | :--- | :--- | :--- |
+| 100,278 | **27.93 MB/sec** | **25,284 msg/sec** | 3.6 seconds |
+
+**Key Findings:**
+* The consumer is highly efficient, matching the producer's peak output of ~27 MB/s, showing no bottlenecks in the data pipeline.
+
+---
